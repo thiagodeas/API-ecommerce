@@ -9,8 +9,8 @@ import { User } from '@prisma/client';
 @Injectable()
 export class AuthService {
     constructor (
-        private readonly usersService: UsersService,
-        private readonly jwtService: JwtService
+        private usersService: UsersService,
+        private jwtService: JwtService,
 ) {}
 
 async login (loginUserDto: LoginUserDTO) {

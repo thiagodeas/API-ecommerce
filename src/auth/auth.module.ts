@@ -11,6 +11,6 @@ import { PrismaModule } from 'src/prisma/prisma.module';
   imports: [UsersModule, PassportModule.register({ defaultStrategy: 'jwt' }), JwtModule, PrismaModule],
   providers: [AuthService, JwtStrategy],
   controllers: [AuthController],
-  exports: [AuthService],
+  exports: [AuthService, JwtModule],
 })
 export class AuthModule {}

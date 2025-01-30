@@ -1,5 +1,5 @@
 import { CreateUserDTO } from './dto/create-user.dto';
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { User } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
@@ -8,24 +8,23 @@ import * as bcrypt from 'bcryptjs';
 export class UsersService {
     constructor (private readonly prisma: PrismaService) {}
 
-    async findAll(): Promise<User []> {
+    async findAll() {
         return this.prisma.user.findMany();
     }
 
-    async createUser(usr: CreateUserDTO): Promise<User> {
-        const hashedPassword = await bcrypt.hash(usr.password, 10);
+    async createUser (usr: CreateUserDTO): Promise<User> {
         const user = await this.prisma.user.create({
             data: {
                 name: usr.name,
                 email: usr.email,
-                password: hashedPassword,
+                password: usr.password,
             },
         });
 
         return user;
     }
 
-    async findUserByEmail(email: string): Promise<User | null> {
+    async findUserByEmail (email: string): Promise<User | null> {
         return this.prisma.user.findUnique({
             where: {
                 email,
@@ -33,15 +32,45 @@ export class UsersService {
         });
     }
 
-    async findUserById(id: number): Promise<User | null> {
-        return this.prisma.user.findUnique({
-            where:{
-                id,
+    async findUserById (id: string): Promise<User | null> {
+        const userId = Number(id);
+
+        if (isNaN(userId)) {
+            throw new BadRequestException('O ID fornecido não é um número válido.');
+        }
+
+        const user = await this.prisma.user.findUnique({
+            where: {
+                id: userId,
             },
         });
+
+        if (!user) {
+            throw new NotFoundException('Usuário não encontrado.');
+        }
+
+        return user;
     }
 
-    async comparePassword(providedPassword: string, storedPassword: string): Promise<boolean> {
+    async deleteUser (id: string) {
+        const userId = Number(id);
+
+        if (isNaN(userId)) {
+            throw new BadRequestException('O ID fornecido não é um número válido.');
+        }
+
+        const user = await this.prisma.user.delete({
+            where: {
+                id: userId,
+            },
+        });
+
+        if (!user) {
+            throw new NotFoundException('Usuário não encontrado.');
+        }
+    }
+
+    async comparePassword (providedPassword: string, storedPassword: string): Promise<boolean> {
         return bcrypt.compare(providedPassword, storedPassword);
     }
 }

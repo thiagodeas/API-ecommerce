@@ -59,14 +59,17 @@ export class UsersService {
             throw new BadRequestException('O ID fornecido não é um número válido.');
         }
 
-        const user = await this.prisma.user.delete({
-            where: {
-                id: userId,
-            },
-        });
-
-        if (!user) {
-            throw new NotFoundException('Usuário não encontrado.');
+        try {
+            await this.prisma.user.delete({
+                where: {
+                    id: userId,
+                },
+            });
+        } catch (error) {
+            if (error.code === 'P2025') {
+                throw new NotFoundException('Usuário não encontrado.');
+            }
+            throw error;
         }
     }
 

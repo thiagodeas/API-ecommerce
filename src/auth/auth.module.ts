@@ -6,7 +6,6 @@ import { JwtStrategy } from './jwt.strategy';
 import { JwtModule } from '@nestjs/jwt';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { PassportModule } from '@nestjs/passport';
-import { UsersService } from 'src/users/users.service';
 
 @Module({
   imports: [UsersModule, PassportModule.register({ defaultStrategy: 'jwt' }), JwtModule, PrismaModule],

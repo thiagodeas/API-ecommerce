@@ -3,9 +3,10 @@ import { LoginUserDTO } from 'src/users/dto/login-user.dto';
 import { UsersService } from 'src/users/users.service';
 import * as bcrypt from 'bcryptjs';
 import { JwtPayload } from './jwt-payload.interface';
-import { User } from '@prisma/client';
 import { JwtService } from '@nestjs/jwt';
 import { CreateUserDTO } from 'src/users/dto/create-user.dto';
+import { plainToInstance } from 'class-transformer';
+import { UserResponseDTO } from '../users/dto/user-response.dto';
 
 @Injectable()
 export class AuthService {
@@ -35,7 +36,7 @@ async login (loginUserDto: LoginUserDTO) {
     return {user, accessToken};
 }
 
-async register (usr: CreateUserDTO): Promise<{ user: User }> {
+async register (usr: CreateUserDTO): Promise<{ user: UserResponseDTO }> {
     const existingUser = await this.usersService.findUserByEmail(usr.email);
     if (existingUser) {
         throw new BadRequestException('Email já está em uso!');
@@ -48,7 +49,7 @@ async register (usr: CreateUserDTO): Promise<{ user: User }> {
         password: hashedPassword,
     });
 
-    return { user };
+    return { user: plainToInstance(UserResponseDTO, user) };
 }
 
 async validateUserByJwt(payload: JwtPayload) {

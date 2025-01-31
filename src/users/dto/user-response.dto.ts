@@ -10,8 +10,11 @@ export class UserResponseDTO {
     @Expose()
     email: string;
 
-    @Expose()
+    @Exclude()
     createdAt: Date;
+
+    @Exclude()
+    updatedAt: Date;
 
     @Exclude()
     password: string;

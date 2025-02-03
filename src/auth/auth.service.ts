@@ -15,7 +15,7 @@ export class AuthService {
         private jwtService: JwtService,
 ) {}
 
-async login (loginUserDto: LoginUserDTO) {
+async login (loginUserDto: LoginUserDTO): Promise<{ user: UserResponseDTO, accessToken: string }> {
     const user = await this.usersService.findUserByEmail(loginUserDto.email);
     if (!user) {
         throw new NotFoundException('Usuário não encontrado!');
@@ -33,7 +33,7 @@ async login (loginUserDto: LoginUserDTO) {
         expiresIn: process.env.JWT_EXPIRES_IN,
     });
 
-    return {user, accessToken};
+    return { user: plainToInstance(UserResponseDTO, user), accessToken}
 }
 
 async register (usr: CreateUserDTO): Promise<{ user: UserResponseDTO }> {

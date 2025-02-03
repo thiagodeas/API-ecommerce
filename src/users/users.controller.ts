@@ -21,4 +21,5 @@ export class UsersController {
     async deleteUserById(@Param('id') id: string) {
         return this.usersService.deleteUser(id);
     }
-}
+}npx prisma generate
+

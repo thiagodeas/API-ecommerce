@@ -1,7 +1,7 @@
 import { CreateUserDTO } from './dto/create-user.dto';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { User } from '@prisma/client';
+import { Role, User } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 
 @Injectable()
@@ -18,6 +18,7 @@ export class UsersService {
                 name: usr.name,
                 email: usr.email,
                 password: usr.password,
+                role: usr.role || Role.USER,
             },
         });
 

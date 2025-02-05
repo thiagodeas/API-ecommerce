@@ -1,3 +1,4 @@
+import { Role } from "@prisma/client";
 import { Exclude, Expose } from "class-transformer";
 
 export class UserResponseDTO {
@@ -18,6 +19,9 @@ export class UserResponseDTO {
 
     @Exclude()
     password: string;
+
+    @Expose()
+    role: Role;
 
     constructor (partial: Partial<UserResponseDTO>) {
         Object.assign(this, partial);

@@ -22,7 +22,7 @@ export class RolesGuard implements CanActivate {
         const user = request.user as AuthenticatedUser;
 
         if (!user || !requiredRoles.includes(user.role)) {
-            throw new ForbiddenException('Acesso negado! Você não tem permissão para acessar essa rota.');
+            throw new ForbiddenException('Acesso negado! Você não tem permissão para executar essa ação.');
         }
 
         return true;

@@ -2,7 +2,7 @@ import { Role } from "@prisma/client";
 import { Exclude, Expose } from "class-transformer";
 
 export class UserResponseDTO {
-    @Exclude()
+    @Expose()
     id: number;
 
     @Expose()
@@ -11,10 +11,10 @@ export class UserResponseDTO {
     @Expose()
     email: string;
 
-    @Exclude()
+    @Expose()
     createdAt: Date;
 
-    @Exclude()
+    @Expose()
     updatedAt: Date;
 
     @Exclude()

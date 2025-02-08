@@ -11,8 +11,9 @@ import { plainToInstance } from 'class-transformer';
 export class UsersService {
     constructor (private readonly prisma: PrismaService) {}
 
-    async findAll() {
-        return this.prisma.user.findMany();
+    async findAll(): Promise<{users: UserResponseDTO[]}>{
+        const users = await this.prisma.user.findMany();
+        return { users: plainToInstance(UserResponseDTO, users, { excludeExtraneousValues: true }) };
     }
 
     async createUser (usr: CreateUserDTO): Promise<User> {
@@ -38,7 +39,7 @@ export class UsersService {
         });
     }
 
-    async findUserById (id: string): Promise<User | null> {
+    async findUserById (id: string): Promise<{user: UserResponseDTO}> {
         const userId = Number(id);
 
         if (isNaN(userId)) {
@@ -55,10 +56,10 @@ export class UsersService {
             throw new NotFoundException('Usuário não encontrado.');
         }
 
-        return user;
+        return {user: plainToInstance(UserResponseDTO, user)};
     }
 
-    async updateUser (id: string, data: UpdateUserDTO): Promise<{user: UserResponseDTO}> {
+    async updateUser (id: string, data: UpdateUserDTO): Promise<UserResponseDTO> {
         if (data.password) {
             data.password = await bcrypt.hash(data.password, 10);
         }
@@ -68,7 +69,7 @@ export class UsersService {
             data,
         })
 
-        return { user: plainToInstance(UserResponseDTO, user) };
+        return plainToInstance(UserResponseDTO, user);
     }
 
     async deleteUser (id: string) {

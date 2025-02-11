@@ -17,6 +17,6 @@ export class CreateProductDTO {
     @IsOptional()
     imageUrl?: string;
 
-    @IsString()
-    category: string;
+    @IsNumber()
+    categoryId: number;
 }

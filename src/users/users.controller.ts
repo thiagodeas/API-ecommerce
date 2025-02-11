@@ -11,7 +11,6 @@ import { UpdateUserDTO } from './dto/update-user.dto';
 export class UsersController {
     constructor (private readonly usersService: UsersService){}
 
-    // esta funcionando ( retornando os dados necessarios )
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(Role.ADMIN)
     @Get()
@@ -19,21 +18,18 @@ export class UsersController {
         return this.usersService.findAll();
     }
 
-    // está funcionando ( retornando os dados necessarios )
      @UseGuards(AuthGuard('jwt'))
      @Get('me')
      async getMyProfile(@Request() req: AuthRequest) {
          return this.usersService.findUserById(String(req.user.id));
      }
 
-     // esta funcionando ( retornando os dados necessarios )
      @UseGuards(AuthGuard('jwt'))
      @Patch('me')
      async updateMyProfile(@Request() req: AuthRequest, @Body() updateUserDTO: UpdateUserDTO) {
         return this.usersService.updateUser(String(req.user.id), updateUserDTO);
      }
 
-     // esta funcionando ( retornando os dados necessarios )
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(Role.ADMIN)
     @Get(':id')
@@ -41,13 +37,10 @@ export class UsersController {
         return this.usersService.findUserById(id);
     }
 
-    // esta funcionando ( retornando os dados necessarios )
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(Role.ADMIN)
     @Delete(':id')
     async deleteUserById(@Param('id') id: string) {
         return this.usersService.deleteUser(id);
     }
-
-   
 }

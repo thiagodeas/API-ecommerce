@@ -34,6 +34,13 @@ export class ProductsController {
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(Role.ADMIN)
+    @Get('category/:id')
+    async findProductsByCategoryId(@Param('id') id: string) {
+        return this.productsService.findProductsByCategory(id);
+    }
+
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles(Role.ADMIN)
     @Patch(':id')
     async updateProduct(@Param('id') id: string, @Body() updateProductDTO: UpdateProductDTO) {
         return this.productsService.updateProduct(id, updateProductDTO);

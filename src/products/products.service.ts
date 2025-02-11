@@ -41,6 +41,20 @@ export class ProductsService {
         return {product};
     }
 
+    async findProductsByCategory(id: string): Promise<{ products: Product[] }> {
+        const categoryId = Number(id);
+
+        if (isNaN(categoryId)) {
+            throw new NotFoundException('Categoria não encontrada.');
+        }
+
+        const products = await this.prisma.product.findMany({
+            where: { categoryId },
+        });
+
+        return { products };
+    }
+
     async updateProduct(id: string, data: UpdateProductDTO): Promise<{updatedProduct: Product}> {
         const productId = Number(id);
 

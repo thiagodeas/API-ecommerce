@@ -42,7 +42,7 @@ export class CategoriesController {
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(Role.ADMIN)
     @Delete(':id')
-    async deleteCategory(@Param() id:string) {
+    async deleteCategory(@Param('id') id:string) {
         return this.categoriesService.deleteCategory(id);
     }
 }

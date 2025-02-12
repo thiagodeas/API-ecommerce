@@ -16,7 +16,9 @@ export class CartService {
         });
     }
 
-    async addItemToCart(cartId: number, addItemToCartDTO: AddItemToCartDTO): Promise<CartItem> {
+    async addItemToCart(id: string, addItemToCartDTO: AddItemToCartDTO): Promise<CartItem> {
+        const cartId = Number(id);
+
         const productExists = await this.prisma.product.findUnique({
             where: { id: addItemToCartDTO.productId },
         });
@@ -36,8 +38,9 @@ export class CartService {
         });
     }
 
-    async removeItemFromCart(cartId: number, removeItemFromCartDTO: RemoveItemFromCartDTO): Promise<void> {
+    async removeItemFromCart(id: string, removeItemFromCartDTO: RemoveItemFromCartDTO): Promise<void> {
         try {
+            const cartId = Number(id);
             const cartItem = await this.prisma.cartItem.findFirst({
                 where: { cartId, productId: removeItemFromCartDTO.productId },
             });
@@ -58,7 +61,8 @@ export class CartService {
         }
     }
 
-    async getCart(userId: number): Promise<CartResponseDTO | null> {
+    async getCart(id: string): Promise<CartResponseDTO | null> {
+        const userId = Number(id);
         const cart = await this.prisma.cart.findUnique({
             where: { userId },
             include: { items: { include: { product: true } } },

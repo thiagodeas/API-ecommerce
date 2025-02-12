@@ -10,9 +10,10 @@ import { ProductsService } from './products/products.service';
 import { ProductsController } from './products/products.controller';
 import { ProductsModule } from './products/products.module';
 import { CategoriesModule } from './categories/categories.module';
+import { CartModule } from './cart/cart.module';
 
 @Module({
-  imports: [PrismaModule, UsersModule, AuthModule, ProductsModule, CategoriesModule],
+  imports: [PrismaModule, UsersModule, AuthModule, ProductsModule, CategoriesModule, CartModule],
   controllers: [AppController, ProductsController],
   providers: [AppService, PrismaService, AuthService, ProductsService],
 })

@@ -15,6 +15,7 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   role    Role    @default(USER)
+  cart    Cart?
 }
 
 model Category {
@@ -36,6 +37,7 @@ model Product {
   category    Category @relation(fields: [categoryId], references: [id])
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt       
+  cartItems   CartItem[]
 }
 
 model Cart {
@@ -43,7 +45,6 @@ model Cart {
   userId    Int       @unique
   user      User      @relation(fields: [userId], references: [id])
   items     CartItem[]
-  total     Decimal @default(0.00)
 }
 
 model CartItem {
@@ -53,7 +54,6 @@ model CartItem {
   productId Int
   product   Product   @relation(fields: [productId], references: [id])
   quantity  Int       @default(1)
-  subtotal  Decimal
 }
 
 enum Role {

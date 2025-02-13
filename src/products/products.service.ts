@@ -3,6 +3,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateProductDTO } from './dto/create-product.dto';
 import { Product } from '@prisma/client';
 import { UpdateProductDTO } from './dto/update-product.dto';
+import { parseId } from 'src/utils/parse-id.util';
 
 @Injectable()
 export class ProductsService {
@@ -22,11 +23,7 @@ export class ProductsService {
     }
 
     async findProductById(id: string): Promise<{product: Product}> {
-        const productId = Number(id);
-
-        if (isNaN(productId)) {
-            throw new BadRequestException('O ID fornecido não é um número válido.');
-        }
+        const productId = parseId(id);
 
         const product = await this.prisma.product.findUnique({
             where: {
@@ -42,11 +39,7 @@ export class ProductsService {
     }
 
     async findProductsByCategory(id: string): Promise<{ products: Product[] }> {
-        const categoryId = Number(id);
-
-        if (isNaN(categoryId)) {
-            throw new NotFoundException('Categoria não encontrada.');
-        }
+        const categoryId = parseId(id);
 
         const products = await this.prisma.product.findMany({
             where: { categoryId },
@@ -56,11 +49,7 @@ export class ProductsService {
     }
 
     async updateProduct(id: string, data: UpdateProductDTO): Promise<{updatedProduct: Product}> {
-        const productId = Number(id);
-
-        if (isNaN(productId)) {
-            throw new BadRequestException('O ID fornecido não é um número válido.');
-        }
+        const productId = parseId(id);
 
         const updatedProduct = await this.prisma.product.update({
             where: {id: productId},
@@ -71,12 +60,8 @@ export class ProductsService {
     }
 
     async deleteProduct(id: string) {
-        const productId = Number(id);
-
-        if (isNaN(productId)) {
-            throw new BadRequestException('O ID fornecido não é um número válido.');
-        }
-
+        const productId = parseId(id);
+        
         try {
             await this.prisma.product.delete({
                 where: {

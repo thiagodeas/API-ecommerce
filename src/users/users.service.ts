@@ -6,6 +6,7 @@ import * as bcrypt from 'bcryptjs';
 import { UpdateUserDTO } from './dto/update-user.dto';
 import { UserResponseDTO } from './dto/user-response.dto';
 import { plainToInstance } from 'class-transformer';
+import { parseId } from 'src/utils/parse-id.util';
 
 @Injectable()
 export class UsersService {
@@ -40,11 +41,7 @@ export class UsersService {
     }
 
     async findUserById (id: string): Promise<{user: UserResponseDTO}> {
-        const userId = Number(id);
-
-        if (isNaN(userId)) {
-            throw new BadRequestException('O ID fornecido não é um número válido.');
-        }
+        const userId = parseId(id);
 
         const user = await this.prisma.user.findUnique({
             where: {
@@ -64,8 +61,10 @@ export class UsersService {
             data.password = await bcrypt.hash(data.password, 10);
         }
 
+        const userId = parseId(id)
+
         const user = await this.prisma.user.update({
-            where: { id: Number(id) },
+            where: { id: userId },
             data,
         })
 
@@ -73,11 +72,7 @@ export class UsersService {
     }
 
     async deleteUser (id: string) {
-        const userId = Number(id);
-
-        if (isNaN(userId)) {
-            throw new BadRequestException('O ID fornecido não é um número válido.');
-        }
+        const userId = parseId(id);
 
         try {
             await this.prisma.user.delete({

@@ -3,6 +3,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateCategoryDTO } from './dto/create-category.dto';
 import { Category } from '@prisma/client';
 import { UpdateCategoryDTO } from './dto/update-category.dto';
+import { parseId } from 'src/utils/parse-id.util';
 
 @Injectable()
 export class CategoriesService {
@@ -23,12 +24,8 @@ export class CategoriesService {
     }
 
     async findCategoryById(id: string): Promise<{category: Category}> {
-        const categoryId = Number(id);
+        const categoryId = parseId(id);
         
-        if (isNaN(categoryId)) {
-            throw new BadRequestException('O ID fornecido não é um número válido.');
-        }
-
         const category = await this.prisma.category.findUnique({
             where: {id: categoryId},
         });
@@ -41,11 +38,7 @@ export class CategoriesService {
     }
 
     async updateCategory(id: string, data: UpdateCategoryDTO): Promise<{updatedCategory: Category}> {
-        const categoryId = Number(id);
-        
-        if (isNaN(categoryId)) {
-            throw new BadRequestException('O ID fornecido não é um número válido.');
-        }
+        const categoryId = parseId(id);
 
         const updatedCategory = await this.prisma.category.update({
             where: { id: categoryId },
@@ -56,11 +49,7 @@ export class CategoriesService {
     }
 
     async deleteCategory(id: string) {
-        const categoryId = Number(id);
-
-        if (isNaN(categoryId)) {
-            throw new BadRequestException('O ID fornecido não é um número válido.');
-        }
+        const categoryId = parseId(id);
 
         try {
             await this.prisma.category.delete({

@@ -5,6 +5,7 @@ import { CreateCartDTO } from './dto/create-cart.dto';
 import { AddItemToCartDTO } from './dto/add-item-to-cart.dto';
 import { RemoveItemFromCartDTO } from './dto/remove-item-from-cart.dto';
 import { CartItemResponseDTO, CartResponseDTO } from './dto/cart-response.dto';
+import { parseId } from 'src/utils/parse-id.util';
 
 @Injectable()
 export class CartService {
@@ -17,7 +18,7 @@ export class CartService {
     }
 
     async addItemToCart(id: string, addItemToCartDTO: AddItemToCartDTO): Promise<CartItem> {
-        const cartId = Number(id);
+        const cartId = parseId(id);
 
         const productExists = await this.prisma.product.findUnique({
             where: { id: addItemToCartDTO.productId },
@@ -40,7 +41,7 @@ export class CartService {
 
     async removeItemFromCart(id: string, removeItemFromCartDTO: RemoveItemFromCartDTO): Promise<void> {
         try {
-            const cartId = Number(id);
+            const cartId = parseId(id);
             const cartItem = await this.prisma.cartItem.findFirst({
                 where: { cartId, productId: removeItemFromCartDTO.productId },
             });
@@ -62,7 +63,7 @@ export class CartService {
     }
 
     async getCart(id: string): Promise<CartResponseDTO | null> {
-        const userId = Number(id);
+        const userId = parseId(id);
         const cart = await this.prisma.cart.findUnique({
             where: { userId },
             include: { items: { include: { product: true } } },

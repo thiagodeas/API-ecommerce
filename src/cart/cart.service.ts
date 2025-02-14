@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { Cart, CartItem, Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateCartDTO } from './dto/create-cart.dto';
@@ -11,10 +11,25 @@ import { parseId } from 'src/utils/parse-id.util';
 export class CartService {
     constructor(private prisma: PrismaService) {}
 
-    async createCart(createCartDTO: CreateCartDTO): Promise<Cart> {
-        return this.prisma.cart.create({
+    async createCart(createCartDTO: CreateCartDTO): Promise<{cart: Cart}> {
+        if (!createCartDTO.userId) {
+            throw new BadRequestException('O campo userID deve ser preenchido.');
+        }
+
+        const existingCart = await this.prisma.cart.findUnique({
+            where: { userId: createCartDTO.userId },
+        });
+
+        if (existingCart) {
+            throw new ConflictException('O usuário já tem um carrinho.');
+        }
+
+
+        const cart =  await this.prisma.cart.create({
             data: { userId: createCartDTO.userId },
         });
+
+        return { cart };
     }
 
     async addItemToCart(id: string, addItemToCartDTO: AddItemToCartDTO): Promise<CartItem> {
@@ -64,30 +79,21 @@ export class CartService {
 
     async getCart(id: string): Promise<CartResponseDTO | null> {
         const userId = parseId(id);
+        
         const cart = await this.prisma.cart.findUnique({
             where: { userId },
-            include: { items: { include: { product: true } } },
+            include: {
+                items: {
+                    include: { product: true },
+                 },
+            },
         });
 
         if (!cart) {
             return null;
         }
 
-        const items: CartItemResponseDTO[] = cart.items.map((item) => ({
-            productId: item.productId,
-            quantity: item.quantity,
-            subtotal: item.quantity * item.product.price,
-            product: item.product,
-        }));
-
-        const total = items.reduce((sum, item) => sum + item.subtotal, 0);
-
-        return {
-            id: cart.id,
-            userId: cart.userId,
-            items,
-            total,
-        };
+        return new CartResponseDTO(cart);
     }
 }
 

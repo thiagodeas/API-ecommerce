@@ -6,6 +6,7 @@ import { AddItemToCartDTO } from './dto/add-item-to-cart.dto';
 import { RemoveItemFromCartDTO } from './dto/remove-item-from-cart.dto';
 import { CartItemResponseDTO, CartResponseDTO } from './dto/cart-response.dto';
 import { parseId } from 'src/utils/parse-id.util';
+import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class CartService {
@@ -93,10 +94,21 @@ export class CartService {
 
         if (!cart) return null;
 
-        
-        
+        const items = cart.items.map((item) => ({
+            productId: item.product.id,
+            productName: item.product.name,
+            price: item.product.price,
+            quantity: item.quantity,
+            subtotal: item.quantity * item.product.price,
+        }));
 
-        return new CartResponseDTO(cart);
+        const total = items.reduce((sum, item) => sum + item.subtotal, 0);
+
+        return plainToInstance(CartResponseDTO, {
+            id: cart.id,
+            userId: cart.userId,
+            items: plainToInstance(CartItemResponseDTO, items),
+            total,
+        });
     }
 }
-

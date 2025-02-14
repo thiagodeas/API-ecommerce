@@ -12,6 +12,7 @@ export class CartService {
     constructor(private prisma: PrismaService) {}
 
     async createCart(createCartDTO: CreateCartDTO): Promise<{cart: Cart}> {
+
         if (!createCartDTO.userId) {
             throw new BadRequestException('O campo userID deve ser preenchido.');
         }
@@ -78,6 +79,7 @@ export class CartService {
     }
 
     async getCart(id: string): Promise<CartResponseDTO | null> {
+
         const userId = parseId(id);
         
         const cart = await this.prisma.cart.findUnique({
@@ -89,9 +91,10 @@ export class CartService {
             },
         });
 
-        if (!cart) {
-            return null;
-        }
+        if (!cart) return null;
+
+        
+        
 
         return new CartResponseDTO(cart);
     }

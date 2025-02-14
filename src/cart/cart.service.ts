@@ -45,38 +45,78 @@ export class CartService {
             throw new NotFoundException('Produto não encontrado.');
         }
 
+        const subtotal = productExists.price * addItemToCartDTO.quantity;
+
         const cartItem: Prisma.CartItemCreateInput = {
             cart: { connect: { id: cartId } },
             product: { connect: { id: addItemToCartDTO.productId } },
             quantity: addItemToCartDTO.quantity,
+            subtotal,
         };
 
-        return this.prisma.cartItem.create ({
+        const createdCartItem = await this.prisma.cartItem.create ({
             data: cartItem,
+        });
+
+        await this.updateCartTotal(cartId);
+
+        return createdCartItem;
+    }
+
+    async updateCartTotal(cartId: number): Promise<void> {
+        const cartItems = await this.prisma.cartItem.findMany({
+            where: { cartId },
+        });
+
+        const total = cartItems.reduce((sum, item) => sum + item.subtotal, 0);
+
+        await this.prisma.cart.update({
+            where: { id: cartId },
+            data: {
+                total,
+            },
         });
     }
 
     async removeItemFromCart(id: string, removeItemFromCartDTO: RemoveItemFromCartDTO): Promise<void> {
-        try {
             const cartId = parseId(id);
+
             const cartItem = await this.prisma.cartItem.findFirst({
                 where: { cartId, productId: removeItemFromCartDTO.productId },
+                include: { product: true },
             });
 
             if (!cartItem) {
                 throw new NotFoundException('Item não encontrado no carrinho.');
             }
 
-            await this.prisma.cartItem.delete({
-                where: { id: cartItem.id },
-            });
-        } catch (error) {
-            if (error instanceof NotFoundException) {
-                throw error
+             if (cartItem.quantity === 1) {
+                await this.prisma.cartItem.delete({
+                    where: { id: cartItem.id },
+                });
+                
             } else {
-                throw new Error('Erro ao remover o item do carrinho');
+                await this.prisma.cartItem.update({
+                    where: { id: cartItem.id},
+                    data: {
+                        quantity: cartItem.quantity - 1,
+                    },
+                });
             }
-        }
+
+            const updatedCartItems = await this.prisma.cartItem.findMany({
+                where: { cartId },
+                include: { product: true },
+            });
+
+            const updatedTotal = updatedCartItems.reduce((total, item) => {
+                return total + (item.product.price * item.quantity);
+            }, 0);
+
+            await this.prisma.cart.update({
+                where: { id: cartId },
+                data: { total: updatedTotal },
+            });
     }
 
     async getCart(id: string): Promise<CartResponseDTO | null> {
@@ -102,7 +142,7 @@ export class CartService {
             subtotal: item.quantity * item.product.price,
         }));
 
-        const total = items.reduce((sum, item) => sum + item.subtotal, 0);
+        const total = cart.total;
 
         return plainToInstance(CartResponseDTO, {
             id: cart.id,

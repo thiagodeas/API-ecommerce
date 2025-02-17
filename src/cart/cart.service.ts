@@ -45,17 +45,35 @@ export class CartService {
             throw new NotFoundException('Produto não encontrado.');
         }
 
-        const subtotal = productExists.price * addItemToCartDTO.quantity;
+        const existingCartItem = await this.prisma.cartItem.findFirst({
+            where: {
+                cartId, productId: addItemToCartDTO.productId,
+            },
+        });
 
-        const cartItem: Prisma.CartItemCreateInput = {
-            cart: { connect: { id: cartId } },
-            product: { connect: { id: addItemToCartDTO.productId } },
-            quantity: addItemToCartDTO.quantity,
-            subtotal,
-        };
+        if (existingCartItem) {
+                const updatedCartItem = await this.prisma.cartItem.update({
+                where: { id: existingCartItem.id },
+                data: {
+                    quantity: existingCartItem.quantity + addItemToCartDTO.quantity,
+                    subtotal: parseFloat(((existingCartItem.quantity + addItemToCartDTO.quantity) * productExists.price).toFixed(2)),
+                },
+            });
+
+            await this.updateCartTotal(cartId);
+
+            return updatedCartItem;  
+        } 
+
+        const subtotal = parseFloat((productExists.price * addItemToCartDTO.quantity).toFixed(2));
 
         const createdCartItem = await this.prisma.cartItem.create ({
-            data: cartItem,
+            data: {
+                cart: { connect: { id: cartId } },
+                product: { connect: { id: addItemToCartDTO.productId } },
+                quantity: addItemToCartDTO.quantity,
+                subtotal,
+            },
         });
 
         await this.updateCartTotal(cartId);
@@ -68,7 +86,7 @@ export class CartService {
             where: { cartId },
         });
 
-        const total = cartItems.reduce((sum, item) => sum + item.subtotal, 0);
+        const total = parseFloat(cartItems.reduce((sum, item) => sum + item.subtotal, 0).toFixed(2));
 
         await this.prisma.cart.update({
             where: { id: cartId },
@@ -109,9 +127,9 @@ export class CartService {
                 include: { product: true },
             });
 
-            const updatedTotal = updatedCartItems.reduce((total, item) => {
+            const updatedTotal = parseFloat(updatedCartItems.reduce((total, item) => {
                 return total + (item.product.price * item.quantity);
-            }, 0);
+            }, 0).toFixed(2));
 
             await this.prisma.cart.update({
                 where: { id: cartId },
@@ -139,10 +157,10 @@ export class CartService {
             productName: item.product.name,
             price: item.product.price,
             quantity: item.quantity,
-            subtotal: item.quantity * item.product.price,
+            subtotal: parseFloat((item.quantity * item.product.price).toFixed(2)),
         }));
 
-        const total = cart.total;
+        const total = parseFloat(cart.total.toFixed(2));
 
         return plainToInstance(CartResponseDTO, {
             id: cart.id,

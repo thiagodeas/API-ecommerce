@@ -23,7 +23,7 @@ export class UsersService {
                 name: usr.name,
                 email: usr.email,
                 password: usr.password,
-                role: usr.role || Role.USER,
+                role: Role.USER,
             },
         });
 

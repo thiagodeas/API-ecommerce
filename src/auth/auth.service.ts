@@ -45,7 +45,8 @@ async register (usr: CreateUserDTO): Promise<{ user: UserResponseDTO }> {
     const hashedPassword = await bcrypt.hash(usr.password, 10);
 
     const user = await this.usersService.createUser({
-        ...usr,
+        email: usr.email,
+        name: usr.name,
         password: hashedPassword,
     });
 

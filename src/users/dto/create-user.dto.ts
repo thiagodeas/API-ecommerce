@@ -14,9 +14,4 @@ export class CreateUserDTO {
     @ApiProperty({ description: 'Senha do usuário (mínimo 6 caracteres)', example: 'password123' })
     @MinLength(6)
     password: string;
-
-    @ApiProperty({ description: 'Papel do usuário', enum: Role, required: false })
-    @IsOptional()
-    @IsEnum(Role)
-    role?: Role;
 }

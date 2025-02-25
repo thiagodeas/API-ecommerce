@@ -1,11 +1,10 @@
 import { BadRequestException } from "@nestjs/common";
+import { Types } from "mongoose";
 
-export function parseId(id: string): number {
-    const convertedId = Number(id);
-
-    if(isNaN(convertedId)) {
-        throw new BadRequestException('O ID fornecido não é um número válido.');
+export function parseId(id: string): string {
+    if (Types.ObjectId.isValid(id)) {
+        return id;
     }
-
-    return convertedId;
+    
+    throw new BadRequestException('O ID fornecido não é válido.');
 }

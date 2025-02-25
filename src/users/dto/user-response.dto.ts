@@ -31,6 +31,9 @@ export class UserResponseDTO {
     @ApiProperty({ description: 'Papel do usuário', enum: Role })
     @Expose()
     role: Role;
+    
+    @Exclude()
+    __v: number;
 
     constructor (partial: Partial <any>) {
         Object.assign(this, partial);

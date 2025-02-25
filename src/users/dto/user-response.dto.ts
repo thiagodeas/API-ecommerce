@@ -1,11 +1,13 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { Role } from "@prisma/client";
 import { Exclude, Expose } from "class-transformer";
+import { Role } from "../schemas/user.schema";
+import { ObjectId } from 'mongodb';
+
 
 export class UserResponseDTO {
     @ApiProperty({ description: 'ID do usuário', example: 1 })
     @Expose()
-    id: number;
+    id: string;
 
     @ApiProperty({ description: 'Nome do usuário', example: 'Thiago Sousa' })
     @Expose()
@@ -30,7 +32,10 @@ export class UserResponseDTO {
     @Expose()
     role: Role;
 
-    constructor (partial: Partial<UserResponseDTO>) {
+    constructor (partial: Partial <any>) {
         Object.assign(this, partial);
+        if (partial && partial._id) {
+            this.id = (partial._id instanceof ObjectId) ? partial._id.toString() : partial._id;
+        }
     }
 }

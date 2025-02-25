@@ -1,31 +1,29 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateProductDTO } from './dto/create-product.dto';
-import { Product } from '@prisma/client';
 import { UpdateProductDTO } from './dto/update-product.dto';
 import { parseId } from 'src/utils/parse-id.util';
+import { Product, ProductDocument } from './schemas/products.schema';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 
 @Injectable()
 export class ProductsService {
-    constructor(private readonly prisma: PrismaService) {}
+    constructor(@InjectModel(Product.name) private readonly productModel: Model<ProductDocument>) {}
 
-    async findAll(): Promise<{products: Product[]}> {
-        const products = await this.prisma.product.findMany();
-        return {products};
+    async findAll(): Promise<{ products: Product[] }> {
+        const products = await this.productModel.find().exec();
+        return { products };
     }
 
     async createProduct(createProductDTO: CreateProductDTO): Promise<{product: Product}> {
-        const newProduct = await this.prisma.product.findFirst({
-            where: { name: createProductDTO.name },
-        });
+        const existingProduct = await this.productModel.findOne({ name: createProductDTO.name }).exec();
 
-        if (newProduct) {
+        if (existingProduct) {
             throw new ConflictException('Já existe um produto com este nome.');
         }
 
-        const product = await this.prisma.product.create({
-            data: createProductDTO,
-        });
+        const product = new this.productModel(createProductDTO);
+        await product.save();
 
         return { product };
     }
@@ -33,25 +31,19 @@ export class ProductsService {
     async findProductById(id: string): Promise<{product: Product}> {
         const productId = parseId(id);
 
-        const product = await this.prisma.product.findUnique({
-            where: {
-                id: productId,
-            }
-        });
+        const product = await this.productModel.findById(productId).exec();
 
         if (!product) {
             throw new NotFoundException('Produto não encontrado.');
         }
 
-        return {product};
+        return { product };
     }
 
     async findProductsByCategory(id: string): Promise<{ products: Product[] }> {
         const categoryId = parseId(id);
 
-        const products = await this.prisma.product.findMany({
-            where: { categoryId },
-        });
+        const products = await this.productModel.find({ categoryId }).exec();
 
         return { products };
     }
@@ -59,23 +51,20 @@ export class ProductsService {
     async updateProduct(id: string, data: UpdateProductDTO): Promise<{updatedProduct: Product}> {
         const productId = parseId(id);
 
-        const updatedProduct = await this.prisma.product.update({
-            where: {id: productId},
-            data,
-        });
+        const updatedProduct = await this.productModel.findByIdAndUpdate(productId, data, { new: true }).exec();
 
-        return {updatedProduct};
+        if (!updatedProduct) {
+            throw new NotFoundException('Produto não encontrado.');
+        }
+
+        return { updatedProduct };
     }
 
-    async deleteProduct(id: string) {
+    async deleteProduct(id: string): Promise<void> {
         const productId = parseId(id);
         
         try {
-            await this.prisma.product.delete({
-                where: {
-                    id: productId,
-                },
-            });
+            await this.productModel.findByIdAndDelete(productId).exec();
         } catch (error) {
             if (error.code === 'P2025') {
                 throw new NotFoundException('Produto não encontrado.');

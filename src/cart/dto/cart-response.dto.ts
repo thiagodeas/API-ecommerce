@@ -3,9 +3,9 @@ import { CartItem, Product } from "@prisma/client";
 import { Expose, Type } from "class-transformer";
 
 export class CartItemResponseDTO {
-    @ApiProperty({ example: 1, description: "ID do produto." })
+    @ApiProperty({ example: "615a1f1d7f1e2c00123abcde", description: "ID do produto." })
     @Expose()
-    productId: number;
+    productId: string;
 
     @ApiProperty({ example: "Tênis Nike Air", description: "Nome do produto." })
     @Expose()
@@ -25,13 +25,13 @@ export class CartItemResponseDTO {
 }
 
 export class CartResponseDTO {
-    @ApiProperty({ example: 1, description: "ID do carrinho." })
+    @ApiProperty({ example: "615a1f1d7f1e2c00123abcf0", description: "ID do carrinho." })
     @Expose()
-    id: number;
+    id: string;
 
-    @ApiProperty({ example: 42, description: "ID do usuário dono do carrinho." })
+    @ApiProperty({ example: "615a1f1d7f1e2c00123abc12", description: "ID do usuário dono do carrinho." })
     @Expose()
-    userId: number;
+    userId: string;
 
     @ApiProperty({ example: 599.97, description: "Valor total do carrinho." })
     @Expose()

@@ -1,9 +1,8 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsInt, IsPositive } from "class-validator";
+import { IsMongoId } from "class-validator";
 
 export class RemoveItemFromCartDTO {
     @ApiProperty({ example: 1, description: "ID do produto a ser removido do carrinho." })
-    @IsInt()
-    @IsPositive()
+    @IsMongoId()
     productId: number;
 }

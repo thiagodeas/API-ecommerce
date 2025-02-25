@@ -26,7 +26,7 @@ async login (loginUserDto: LoginUserDTO): Promise<{ user: UserResponseDTO, acces
         throw new Error('Senha inválida!');
     }
 
-    const payload: JwtPayload = {userId: user.id, email: user.email};
+    const payload: JwtPayload = { userId: (user._id as any).toString(), email: user.email};
 
     const accessToken = this.jwtService.sign(payload, {
         secret: process.env.JWT_SECRET,
@@ -51,7 +51,7 @@ async register (usr: CreateUserDTO): Promise<{ user: UserResponseDTO }> {
     });
 
     return { user: plainToInstance(UserResponseDTO, user) };
-}
+}   
 
 async validateUserByJwt(payload: JwtPayload) {
     const userId = String(payload.userId);
@@ -59,5 +59,4 @@ async validateUserByJwt(payload: JwtPayload) {
     const user = await this.usersService.findUserById(userId);
     return user || null;
 }
-
 }

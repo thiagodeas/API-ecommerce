@@ -1,59 +1,54 @@
 import { CreateUserDTO } from './dto/create-user.dto';
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { Role, User } from '@prisma/client';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { Role } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 import { UpdateUserDTO } from './dto/update-user.dto';
-import { UserResponseDTO } from './dto/user-response.dto';
 import { plainToInstance } from 'class-transformer';
 import { parseId } from 'src/utils/parse-id.util';
+import { InjectModel } from '@nestjs/mongoose';
+import { User, UserDocument } from './schemas/user.schema';
+import { Model } from 'mongoose';
+import { UserResponseDTO } from 'src/users/dto/user-response.dto';
 
 @Injectable()
 export class UsersService {
-    constructor (private readonly prisma: PrismaService) {}
+    constructor (@InjectModel(User.name) private readonly userModel: Model<UserDocument>) {}
 
     async findAll(): Promise<{users: UserResponseDTO[]}>{
-        const users = await this.prisma.user.findMany();
-        return { users: plainToInstance(UserResponseDTO, users, { excludeExtraneousValues: true }) };
+        const users = await this.userModel.find().exec();
+        
+        return { users: plainToInstance(UserResponseDTO, users, { excludeExtraneousValues: true })};
     }
 
     async createUser (usr: CreateUserDTO): Promise<User> {
-        const user = await this.prisma.user.create({
-            data: {
-                name: usr.name,
-                email: usr.email,
-                password: usr.password,
-                role: Role.USER,
-            },
+        const createdUser = new this.userModel({
+            name: usr.name,
+            email: usr.email,
+            password: usr.password,
+            role: Role.USER,
         });
 
-        return user;
+        await createdUser.save();
+
+        return createdUser;
     }
 
-    async findUserByEmail (email: string): Promise<User | null> {
+    async findUserByEmail (email: string): Promise<UserDocument | null> {
         if (!email) return null;
-        
-        return this.prisma.user.findUnique({
-            where: {
-                email,
-            },
-        });
+
+        return this.userModel.findOne({ email }).exec();
     }
 
     async findUserById (id: string): Promise<{user: UserResponseDTO}> {
         const userId = parseId(id);
 
-        const user = await this.prisma.user.findUnique({
-            where: {
-                id: userId,
-            },
-        });
+        const user = await this.userModel.findById(userId).exec();
 
         if (!user) {
             throw new NotFoundException('Usuário não encontrado.');
         }
 
-        return {user: plainToInstance(UserResponseDTO, user)};
+        return { user: plainToInstance(UserResponseDTO, user, {excludeExtraneousValues: true}) };
     }
 
     async updateUser (id: string, data: UpdateUserDTO): Promise<UserResponseDTO> {
@@ -63,23 +58,22 @@ export class UsersService {
 
         const userId = parseId(id)
 
-        const user = await this.prisma.user.update({
-            where: { id: userId },
-            data,
-        })
+        const updatedUser = await this.userModel.findByIdAndUpdate(userId, data, {
+            new: true,
+        }).exec();
 
-        return plainToInstance(UserResponseDTO, user);
+        if (!updatedUser) {
+            throw new NotFoundException('Usuário não encontrado.');
+        }
+
+        return plainToInstance(UserResponseDTO, updatedUser, {excludeExtraneousValues: true });
     }
 
     async deleteUser (id: string) {
         const userId = parseId(id);
 
         try {
-            await this.prisma.user.delete({
-                where: {
-                    id: userId,
-                },
-            });
+            await this.userModel.findByIdAndDelete(userId).exec();
         } catch (error) {
             if (error.code === 'P2025') {
                 throw new NotFoundException('Usuário não encontrado.');

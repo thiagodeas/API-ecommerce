@@ -1,35 +1,39 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { Cart, CartItem, Prisma } from '@prisma/client';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { BadRequestException, ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCartDTO } from './dto/create-cart.dto';
 import { AddItemToCartDTO } from './dto/add-item-to-cart.dto';
 import { RemoveItemFromCartDTO } from './dto/remove-item-from-cart.dto';
 import { CartItemResponseDTO, CartResponseDTO } from './dto/cart-response.dto';
 import { parseId } from 'src/utils/parse-id.util';
 import { plainToInstance } from 'class-transformer';
+import { Model } from 'mongoose';
+import { Cart, CartDocument } from './schemas/cart.schema';
+import { InjectModel } from '@nestjs/mongoose';
+import { CartItem, CartItemDodument } from './schemas/cart-item.schema';
+import { Product, ProductDocument } from 'src/products/schemas/products.schema';
 
 @Injectable()
 export class CartService {
-    constructor(private prisma: PrismaService) {}
+    constructor(
+        @InjectModel(Cart.name) private readonly cartModel: Model<CartDocument>,
+        @InjectModel(Product.name) private readonly productModel: Model<ProductDocument>,
+        @InjectModel(CartItem.name) private readonly cartItemModel: Model<CartItemDodument>
+    ) {}
 
     async createCart(createCartDTO: CreateCartDTO): Promise<{cart: Cart}> {
+        const { userId } = createCartDTO;
 
-        if (!createCartDTO.userId) {
+        if (!userId) {
             throw new BadRequestException('O campo userID deve ser preenchido.');
         }
 
-        const existingCart = await this.prisma.cart.findUnique({
-            where: { userId: createCartDTO.userId },
-        });
+        const existingCart = await this.cartModel.findOne({ userId }).exec();
 
         if (existingCart) {
             throw new ConflictException('O usuário já tem um carrinho.');
         }
 
-
-        const cart =  await this.prisma.cart.create({
-            data: { userId: createCartDTO.userId },
-        });
+        const cart =  new this.cartModel(createCartDTO);
+        await cart.save();
 
         return { cart };
     }
@@ -37,136 +41,108 @@ export class CartService {
     async addItemToCart(id: string, addItemToCartDTO: AddItemToCartDTO): Promise<CartItem> {
         const cartId = parseId(id);
 
-        const productExists = await this.prisma.product.findUnique({
-            where: { id: addItemToCartDTO.productId },
-        });
+        const cart = await this.cartModel.findById(cartId).exec();
 
-        if (!productExists) {
+        if (!cart) {
+            throw new NotFoundException('Carrinho não encontrado.');
+        }
+
+        const product = await this.productModel.findById(addItemToCartDTO.productId).exec();
+
+        if (!product) {
             throw new NotFoundException('Produto não encontrado.');
         }
 
-        const existingCartItem = await this.prisma.cartItem.findFirst({
-            where: {
-                cartId, productId: addItemToCartDTO.productId,
-            },
-        });
+        const cartItem = await this.cartItemModel.findOne({ cartId: cart._id, productId: product._id }).exec();
 
-        if (existingCartItem) {
-                const updatedCartItem = await this.prisma.cartItem.update({
-                where: { id: existingCartItem.id },
-                data: {
-                    quantity: existingCartItem.quantity + addItemToCartDTO.quantity,
-                    subtotal: parseFloat(((existingCartItem.quantity + addItemToCartDTO.quantity) * productExists.price).toFixed(2)),
-                },
-            });
-
-            await this.updateCartTotal(cartId);
-
-            return updatedCartItem;  
+        if (cartItem) {
+            cartItem.quantity += addItemToCartDTO.quantity;
+            cartItem.subtotal = parseFloat((cartItem.quantity * product.price).toFixed(2));
+            
+            await cartItem.save();
         } 
 
-        const subtotal = parseFloat((productExists.price * addItemToCartDTO.quantity).toFixed(2));
+        const subtotal = parseFloat((product.price * addItemToCartDTO.quantity).toFixed(2));
 
-        const createdCartItem = await this.prisma.cartItem.create ({
-            data: {
-                cart: { connect: { id: cartId } },
-                product: { connect: { id: addItemToCartDTO.productId } },
-                quantity: addItemToCartDTO.quantity,
-                subtotal,
-            },
+        const createdCartItem = new this.cartItemModel({
+            cartId: cart._id,
+            productId: product._id,
+            quantity: addItemToCartDTO.quantity,
+            subtotal,
         });
 
-        await this.updateCartTotal(cartId);
+        await createdCartItem.save();
+
+        await this.updateCartTotal(cart._id.toString());
 
         return createdCartItem;
     }
 
-    async updateCartTotal(cartId: number): Promise<void> {
-        const cartItems = await this.prisma.cartItem.findMany({
-            where: { cartId },
-        });
+    async updateCartTotal(cartId: number | string): Promise<void> {
+        const cartItems = await this.cartItemModel.find({ cartId }).exec();
 
         const total = parseFloat(cartItems.reduce((sum, item) => sum + item.subtotal, 0).toFixed(2));
 
-        await this.prisma.cart.update({
-            where: { id: cartId },
-            data: {
-                total,
-            },
-        });
+        await this.cartModel.findByIdAndUpdate(cartId, { total }).exec();
     }
 
     async removeItemFromCart(id: string, removeItemFromCartDTO: RemoveItemFromCartDTO): Promise<void> {
             const cartId = parseId(id);
 
-            const cartItem = await this.prisma.cartItem.findFirst({
-                where: { cartId, productId: removeItemFromCartDTO.productId },
-                include: { product: true },
-            });
+            const cart = await this.cartModel.findById(id).exec();
+
+            if (!cart) {
+                throw new NotFoundException('Carrinho não encontrado.');
+            }
+
+            const cartItem = await this.cartItemModel.findOne({ cartId: cart._id,
+                productId: removeItemFromCartDTO.productId
+              }).populate('productId').exec();
 
             if (!cartItem) {
                 throw new NotFoundException('Item não encontrado no carrinho.');
             }
 
              if (cartItem.quantity === 1) {
-                await this.prisma.cartItem.delete({
-                    where: { id: cartItem.id },
-                });
-                
+                await cartItem.deleteOne();
+                await cart.save();
             } else {
-                await this.prisma.cartItem.update({
-                    where: { id: cartItem.id},
-                    data: {
-                        quantity: cartItem.quantity - 1,
-                    },
-                });
+                cartItem.quantity -= 1;
+                const product = await this.productModel.findById(cartItem.productId).exec();
+                if (!product) {
+                    throw new NotFoundException('Produto não encontrado.');
+                }
+                cartItem.subtotal = parseFloat((cartItem.quantity * product.price).toFixed(2));
+                await cartItem.save();
             }
 
-            const updatedCartItems = await this.prisma.cartItem.findMany({
-                where: { cartId },
-                include: { product: true },
-            });
-
-            const updatedTotal = parseFloat(updatedCartItems.reduce((total, item) => {
-                return total + (item.product.price * item.quantity);
-            }, 0).toFixed(2));
-
-            await this.prisma.cart.update({
-                where: { id: cartId },
-                data: { total: updatedTotal },
-            });
+            await this.updateCartTotal(cart._id.toString());
     }
 
     async getCart(id: string): Promise<CartResponseDTO | null> {
-
         const userId = parseId(id);
         
-        const cart = await this.prisma.cart.findUnique({
-            where: { userId },
-            include: {
-                items: {
-                    include: { product: true },
-                 },
-            },
-        });
+        const cart = await this.cartModel.findOne({ userId }).populate({
+            path: 'items',
+            populate: { path: 'productId' },
+        })
+        .exec();
 
         if (!cart) return null;
 
-        const items = cart.items.map((item) => ({
-            productId: item.product.id,
-            productName: item.product.name,
-            price: item.product.price,
+        const items = cart.items.map((item: any) => ({
+            productId: item.productId._id.toString(),
+            productName: item.productId.name,
+            price: item.productId.price,
             quantity: item.quantity,
             subtotal: parseFloat((item.quantity * item.product.price).toFixed(2)),
         }));
 
-        const total = parseFloat(cart.total.toFixed(2));
-
         return plainToInstance(CartResponseDTO, {
-            id: cart.id,
-            userId: cart.userId,
+            id: cart._id.toString(),
+            userId: cart.userId.toString(),
             items: plainToInstance(CartItemResponseDTO, items),
-            total,
+            total: parseFloat(cart.total.toFixed(2)),
         });
     }
 }

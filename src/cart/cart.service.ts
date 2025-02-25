@@ -47,6 +47,12 @@ export class CartService {
             throw new NotFoundException('Carrinho não encontrado.');
         }
 
+        let productId = addItemToCartDTO.productId;
+
+        if (typeof productId === 'number') {
+            throw new BadRequestException('O ID do produto não deve ser um número. Deve ser um ObjectID válido.');
+        }
+
         const product = await this.productModel.findById(addItemToCartDTO.productId).exec();
 
         if (!product) {

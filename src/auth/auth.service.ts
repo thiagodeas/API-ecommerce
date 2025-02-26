@@ -16,6 +16,11 @@ export class AuthService {
 ) {}
 
 async login (loginUserDto: LoginUserDTO): Promise<{ user: UserResponseDTO, accessToken: string }> {
+    if (!loginUserDto.email || !loginUserDto.password) {
+        throw new BadRequestException('E-mail e senha são obrigatórios.');
+    }
+
+
     const user = await this.usersService.findUserByEmail(loginUserDto.email);
     if (!user) {
         throw new NotFoundException('Usuário não encontrado!');
@@ -23,7 +28,7 @@ async login (loginUserDto: LoginUserDTO): Promise<{ user: UserResponseDTO, acces
 
     const isPasswordValid = await bcrypt.compare(loginUserDto.password, user.password);
     if (!isPasswordValid) {
-        throw new Error('Senha inválida!');
+        throw new BadRequestException('Senha inválida!');
     }
 
     const payload: JwtPayload = { userId: (user._id as any).toString(), email: user.email};
@@ -33,7 +38,7 @@ async login (loginUserDto: LoginUserDTO): Promise<{ user: UserResponseDTO, acces
         expiresIn: process.env.JWT_EXPIRES_IN,
     });
 
-    return { user: plainToInstance(UserResponseDTO, user), accessToken}
+    return { user: plainToInstance(UserResponseDTO, user.toObject()), accessToken}
 }
 
 async register (usr: CreateUserDTO): Promise<{ user: UserResponseDTO }> {

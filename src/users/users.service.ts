@@ -30,7 +30,7 @@ export class UsersService {
 
         await createdUser.save();
 
-        return createdUser;
+        return createdUser.toObject();
     }
 
     async findUserByEmail (email: string): Promise<UserDocument | null> {

@@ -13,7 +13,7 @@ export class CategoriesService {
     async findAll(): Promise<{ categories: Category[] }> {
         const categories = await this.categoryModel.find().exec();
 
-        return { categories };
+        return { categories: categories.map(category => category.toObject({ versionKey: false })) };
     }
 
     async createCategory(createCategoryDTO: CreateCategoryDTO): Promise<{category: Category}> {
@@ -26,7 +26,7 @@ export class CategoriesService {
         const category = new this.categoryModel(createCategoryDTO);
         await category.save();
 
-        return { category };
+        return { category: category.toObject({ versionKey: false }) };
     }
 
     async findCategoryById(id: string): Promise<{category: Category}> {

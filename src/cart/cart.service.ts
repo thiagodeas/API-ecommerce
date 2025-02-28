@@ -59,31 +59,30 @@ export class CartService {
             throw new NotFoundException('Produto não encontrado.');
         }
 
-        const cartItem = await this.cartItemModel.findOne({ cartId: cart._id, productId: product._id }).exec();
+        let cartItem = await this.cartItemModel.findOne({ cartId: cart._id, productId: product._id }).exec();
 
         if (cartItem) {
             cartItem.quantity += addItemToCartDTO.quantity;
             cartItem.subtotal = parseFloat((cartItem.quantity * product.price).toFixed(2));
             
             await cartItem.save();
-        } 
+        } else {
+            const subtotal = parseFloat((product.price * addItemToCartDTO.quantity).toFixed(2));
 
-        const subtotal = parseFloat((product.price * addItemToCartDTO.quantity).toFixed(2));
-
-        const createdCartItem = new this.cartItemModel({
+            cartItem = new this.cartItemModel({
             cartId: cart._id,
             productId: product._id,
             quantity: addItemToCartDTO.quantity,
             subtotal,
         });
 
-        await createdCartItem.save();
-
-        await this.cartModel.updateOne({_id: cart.id}, {$push: { items: createdCartItem._id}});
+            await cartItem.save();
+            await this.cartModel.updateOne({_id: cart.id}, {$push: { items: cartItem._id}});
+        }
 
         await this.updateCartTotal(cart._id.toString());
 
-        return createdCartItem.toObject({ versionKey: false });
+        return cartItem.toObject({ versionKey: false });
     }
 
     async updateCartTotal(cartId: number | string): Promise<void> {

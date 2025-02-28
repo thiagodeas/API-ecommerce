@@ -3,10 +3,10 @@ import { CategoriesService } from './categories.service';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
-import { Role } from '@prisma/client';
 import { CreateCategoryDTO } from './dto/create-category.dto';
 import { UpdateCategoryDTO } from './dto/update-category.dto';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Role } from 'src/users/schemas/user.schema';
 
 @ApiTags('categories')
 @ApiBearerAuth()

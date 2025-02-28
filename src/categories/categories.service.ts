@@ -38,7 +38,7 @@ export class CategoriesService {
             throw new NotFoundException('Categoria não encontrada.');
         }
 
-        return { category };
+        return { category: category.toObject({ versionKey: false }) };
     }
 
     async updateCategory(id: string, data: UpdateCategoryDTO): Promise<{updatedCategory: Category}> {
@@ -49,7 +49,7 @@ export class CategoriesService {
         if (!updatedCategory) {
             throw new NotFoundException('Categoria não encontrada');
         }
-        return { updatedCategory };
+        return { updatedCategory: updatedCategory.toObject({ versionKey: false }) };
     }
 
     async deleteCategory(id: string) {

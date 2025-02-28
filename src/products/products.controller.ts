@@ -3,10 +3,10 @@ import { ProductsService } from './products.service';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
-import { Role } from '@prisma/client';
 import { UpdateProductDTO } from './dto/update-product.dto';
 import { CreateProductDTO } from './dto/create-product.dto';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Role } from 'src/users/schemas/user.schema';
 
 @ApiTags('products')
 @ApiBearerAuth()

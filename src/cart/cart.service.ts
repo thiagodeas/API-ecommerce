@@ -35,7 +35,7 @@ export class CartService {
         const cart =  new this.cartModel(createCartDTO);
         await cart.save();
 
-        return { cart };
+        return { cart: cart.toObject({ versionKey: false }) };
     }
 
     async addItemToCart(id: string, addItemToCartDTO: AddItemToCartDTO): Promise<CartItem> {
@@ -79,9 +79,11 @@ export class CartService {
 
         await createdCartItem.save();
 
+        await this.cartModel.updateOne({_id: cart.id}, {$push: { items: createdCartItem._id}});
+
         await this.updateCartTotal(cart._id.toString());
 
-        return createdCartItem;
+        return createdCartItem.toObject({ versionKey: false });
     }
 
     async updateCartTotal(cartId: number | string): Promise<void> {
@@ -128,9 +130,13 @@ export class CartService {
     async getCart(id: string): Promise<CartResponseDTO | null> {
         const userId = parseId(id);
         
-        const cart = await this.cartModel.findOne({ userId }).populate({
+        const cart = await this.cartModel.findOne({ userId })
+        .populate({
             path: 'items',
-            populate: { path: 'productId' },
+            populate: {
+              path: 'productId',
+              model: 'Product',
+            },
         })
         .exec();
 
@@ -141,7 +147,7 @@ export class CartService {
             productName: item.productId.name,
             price: item.productId.price,
             quantity: item.quantity,
-            subtotal: parseFloat((item.quantity * item.product.price).toFixed(2)),
+            subtotal: parseFloat((item.quantity * item.productId.price).toFixed(2)),
         }));
 
         return plainToInstance(CartResponseDTO, {

@@ -12,7 +12,7 @@ export class CartItem {
     productId: MongooseSchema.Types.ObjectId;
 
     @Prop({ default: 1 })
-    quantity: number;
+    quantity: number;   
 
     @Prop({ default: 0 })
     subtotal: number;

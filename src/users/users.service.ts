@@ -1,12 +1,11 @@
 import { CreateUserDTO } from './dto/create-user.dto';
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Role } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 import { UpdateUserDTO } from './dto/update-user.dto';
 import { plainToInstance } from 'class-transformer';
 import { parseId } from 'src/utils/parse-id.util';
 import { InjectModel } from '@nestjs/mongoose';
-import { User, UserDocument } from './schemas/user.schema';
+import { Role, User, UserDocument } from './schemas/user.schema';
 import { Model } from 'mongoose';
 import { UserResponseDTO } from 'src/users/dto/user-response.dto';
 

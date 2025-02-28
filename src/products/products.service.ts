@@ -12,7 +12,7 @@ export class ProductsService {
 
     async findAll(): Promise<{ products: Product[] }> {
         const products = await this.productModel.find().exec();
-        return { products };
+        return { products: products.map(product => product.toObject({ versionKey: false })) };
     }
 
     async createProduct(createProductDTO: CreateProductDTO): Promise<{product: Product}> {
@@ -25,7 +25,7 @@ export class ProductsService {
         const product = new this.productModel(createProductDTO);
         await product.save();
 
-        return { product };
+        return { product: product.toObject({ versionKey: false }) };
     }
 
     async findProductById(id: string): Promise<{product: Product}> {
@@ -37,7 +37,7 @@ export class ProductsService {
             throw new NotFoundException('Produto não encontrado.');
         }
 
-        return { product };
+        return { product: product.toObject({ versionKey: false }) };
     }
 
     async findProductsByCategory(id: string): Promise<{ products: Product[] }> {
@@ -45,7 +45,7 @@ export class ProductsService {
 
         const products = await this.productModel.find({ categoryId }).exec();
 
-        return { products };
+        return { products: products.map(product => product.toObject({ versionKey: false })) };
     }
 
     async updateProduct(id: string, data: UpdateProductDTO): Promise<{updatedProduct: Product}> {
@@ -57,7 +57,7 @@ export class ProductsService {
             throw new NotFoundException('Produto não encontrado.');
         }
 
-        return { updatedProduct };
+        return { updatedProduct: updatedProduct.toObject({ versionKey: false }) };
     }
 
     async deleteProduct(id: string): Promise<void> {

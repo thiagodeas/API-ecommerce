@@ -5,10 +5,14 @@ import { parseId } from 'src/utils/parse-id.util';
 import { Product, ProductDocument } from './schemas/products.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { Category, CategoryDocument } from 'src/categories/schemas/categories.schema';
 
 @Injectable()
 export class ProductsService {
-    constructor(@InjectModel(Product.name) private readonly productModel: Model<ProductDocument>) {}
+    constructor(
+        @InjectModel(Product.name) private readonly productModel: Model<ProductDocument>,
+        @InjectModel(Category.name) private readonly categoryModel: Model<CategoryDocument>
+    ) {}
 
     async findAll(): Promise<{ products: Product[] }> {
         const products = await this.productModel.find().exec();
@@ -22,6 +26,10 @@ export class ProductsService {
             throw new ConflictException('Já existe um produto com este nome.');
         }
 
+        const categoryExists = await this.categoryModel.findById(createProductDTO.categoryId)
+        if (!categoryExists) {
+            throw new NotFoundException('Categoria não encontrada.');
+        }
         const product = new this.productModel(createProductDTO);
         await product.save();
 

@@ -47,6 +47,10 @@ async register (usr: CreateUserDTO): Promise<{ user: UserResponseDTO }> {
         throw new BadRequestException('Email já está em uso!');
     }
 
+    if (usr.password.length < 6) {
+        throw new BadRequestException('A senha deve conter no mínimo 6 caracteres.');
+    }
+
     const hashedPassword = await bcrypt.hash(usr.password, 10);
 
     const user = await this.usersService.createUser({

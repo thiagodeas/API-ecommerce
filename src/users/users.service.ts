@@ -1,5 +1,5 @@
 import { CreateUserDTO } from './dto/create-user.dto';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 import { UpdateUserDTO } from './dto/update-user.dto';
 import { plainToInstance } from 'class-transformer';
@@ -51,11 +51,14 @@ export class UsersService {
     }
 
     async updateUser (id: string, data: UpdateUserDTO): Promise<UserResponseDTO> {
+        const userId = parseId(id)
+        
         if (data.password) {
+            if (data.password.length < 6) {
+                throw new BadRequestException('A senha deve conter no mínimo 6 caracteres.');
+            }
             data.password = await bcrypt.hash(data.password, 10);
         }
-
-        const userId = parseId(id)
 
         const updatedUser = await this.userModel.findByIdAndUpdate(userId, data, {
             new: true,

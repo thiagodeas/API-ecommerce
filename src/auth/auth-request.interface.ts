@@ -1,6 +1,10 @@
 import { Request } from "express";
-import { User } from "src/users/schemas/user.schema";
+import { Role, User } from "src/users/schemas/user.schema";
 
 export interface AuthRequest extends Request {
-    user: User;
+    user: {
+        id: string,
+        email: string,
+        role: Role,
+    };
 }

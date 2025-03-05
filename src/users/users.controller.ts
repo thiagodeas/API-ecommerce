@@ -30,7 +30,7 @@ export class UsersController {
      @ApiResponse({ status: 200, description: 'Informações obtidas com sucesso.' })
      @ApiResponse({ status: 401, description: 'Token inválido ou não fornecido.' })
      async getMyProfile(@Request() req: AuthRequest) {
-         return this.usersService.findUserById(String(req.user._id));
+         return this.usersService.findUserById(String(req.user.id));
      }
 
      @UseGuards(AuthGuard('jwt'))
@@ -41,7 +41,7 @@ export class UsersController {
      @ApiResponse({ status: 401, description: 'Token inválido ou não fornecido.' })
      @ApiBody({ type: UpdateUserDTO })
      async updateMyProfile(@Request() req: AuthRequest, @Body() updateUserDTO: UpdateUserDTO) {
-        return this.usersService.updateUser(String(req.user._id), updateUserDTO);
+        return this.usersService.updateUser(req.user.id.toString(), updateUserDTO);
      }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)

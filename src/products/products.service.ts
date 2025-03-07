@@ -33,6 +33,12 @@ export class ProductsService {
         const product = new this.productModel(createProductDTO);
         await product.save();
 
+        await this.categoryModel.findByIdAndUpdate(
+            createProductDTO.categoryId,
+            { $push: { products: product._id } },
+            { new: true }  
+        ).exec()
+
         return { product: product.toObject({ versionKey: false }) };
     }
 

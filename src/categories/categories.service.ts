@@ -11,7 +11,7 @@ export class CategoriesService {
     constructor(@InjectModel(Category.name) private readonly categoryModel: Model<CategoryDocument>) {}
 
     async findAll(): Promise<{ categories: Category[] }> {
-        const categories = await this.categoryModel.find().exec();
+        const categories = await this.categoryModel.find().populate('products').exec();
 
         return { categories: categories.map(category => category.toObject({ versionKey: false })) };
     }
@@ -32,7 +32,7 @@ export class CategoriesService {
     async findCategoryById(id: string): Promise<{category: Category}> {
         const categoryId = parseId(id);
         
-        const category = await this.categoryModel.findById(categoryId).exec();
+        const category = await this.categoryModel.findById(categoryId).populate('products').exec();
 
         if (!category) {
             throw new NotFoundException('Categoria não encontrada.');

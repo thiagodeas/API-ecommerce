@@ -13,7 +13,7 @@ export class Category {
   description: string;
 
   @Prop({ type: [{ type: MongooseSchema.Types.ObjectId, ref: 'Product' }] })
-  products: Product[]; 
+  products:MongooseSchema.Types.ObjectId[];
 
   @Prop({ default: Date.now })
   createdAt: Date;

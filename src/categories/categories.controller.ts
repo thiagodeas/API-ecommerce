@@ -14,10 +14,8 @@ import { Role } from 'src/users/schemas/user.schema';
 export class CategoriesController {
     constructor(private readonly categoriesService: CategoriesService) {}
 
-    @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.ADMIN)
     @Get()
-    @ApiOperation({ summary: 'Lista todas as categorias (Acesso restrito a ADMIN)' })
+    @ApiOperation({ summary: 'Lista todas as categorias' })
     @ApiResponse({ status: 200, description: 'Categorias listadas com sucesso.' })
     @ApiResponse({ status: 403, description: 'Usuário não autorizado.' })
     async findAllCategories() {
@@ -36,10 +34,8 @@ export class CategoriesController {
         return this.categoriesService.createCategory(createCategoryDTO);
     }
 
-    @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.ADMIN)
     @Get(':id')
-    @ApiOperation({ summary: 'Busca uma categoria pelo ID (Acesso restrito a ADMIN)' })
+    @ApiOperation({ summary: 'Busca uma categoria pelo ID' })
     @ApiResponse({ status: 200, description: 'Categoria encontrada.' })
     @ApiResponse({ status: 404, description: 'Categoria não encontrada.' })
     @ApiResponse({ status: 403, description: 'Usuário não autorizado.' })

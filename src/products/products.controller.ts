@@ -15,9 +15,8 @@ export class ProductsController {
     constructor(private readonly productsService: ProductsService) {}
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.ADMIN)
     @Get()
-    @ApiOperation({ summary: 'Lista todos os produtos (Acesso restrito a ADMIN)' })
+    @ApiOperation({ summary: 'Lista todos os produtos' })
     @ApiResponse( {status: 200, description: 'Produtos listados com sucesso.' })
     @ApiResponse({ status: 403, description: 'Usuário não autorizado.' })
     async findAllProducts() {
@@ -49,9 +48,8 @@ export class ProductsController {
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.ADMIN)
     @Get('category/:id')
-    @ApiOperation({ summary: 'Lista produtos de uma categoria específica (Acesso restrito a ADMIN)' })
+    @ApiOperation({ summary: 'Lista produtos de uma categoria específica' })
     @ApiResponse({ status: 200, description: 'Produtos da categoria retornados com sucesso.' })
     @ApiResponse({ status: 404, description: 'Categoria não encontrada ou sem produtos.' })
     @ApiResponse({ status: 403, description: 'Usuário não autorizado.' })

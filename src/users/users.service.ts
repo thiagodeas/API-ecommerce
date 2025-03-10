@@ -20,14 +20,10 @@ export class UsersService {
     }
 
     async createUser (usr: CreateUserDTO): Promise<User> {
-        const createdUser = new this.userModel({
-            name: usr.name,
-            email: usr.email,
-            password: usr.password,
+        const createdUser = await this.userModel.create({
+            ...usr,
             role: Role.USER,
         });
-
-        await createdUser.save();
 
         return createdUser.toObject();
     }
@@ -74,13 +70,10 @@ export class UsersService {
     async deleteUser (id: string) {
         const userId = parseId(id);
 
-        try {
-            await this.userModel.findByIdAndDelete(userId).exec();
-        } catch (error) {
-            if (error.code === 'P2025') {
-                throw new NotFoundException('Usuário não encontrado.');
-            }
-            throw error;
+        const user = await this.userModel.findByIdAndDelete(userId).exec()
+
+        if (!user) {
+            throw new NotFoundException('Usuário não encontrado.');
         }
     }
 

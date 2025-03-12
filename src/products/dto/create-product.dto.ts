@@ -23,7 +23,6 @@ export class CreateProductDTO {
     @ApiProperty({ description: 'URL da imagem do produto', example: 'https://imagem.com/produto.jpg', required: false })
     imageUrl?: string;
 
-    @IsNumber()
     @ApiProperty({ description: 'ID da categoria do produto', example: 1 })
-    categoryId: number;
+    categoryId: string;
 }

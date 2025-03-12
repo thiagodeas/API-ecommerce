@@ -46,7 +46,7 @@ describe('ProductsService', () => {
         }).compile();
 
         service = module.get<ProductsService>(ProductsService);
-    })
+    });
 
     afterEach(() => {
         jest.clearAllMocks();

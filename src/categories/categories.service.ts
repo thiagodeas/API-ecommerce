@@ -46,7 +46,7 @@ export class CategoriesService {
         const updatedCategory = await this.categoryModel.findByIdAndUpdate(categoryId, data, { new: true }).exec();
 
         if (!updatedCategory) {
-            throw new NotFoundException('Categoria não encontrada');
+            throw new NotFoundException('Categoria não encontrada.');
         }
         return { updatedCategory: updatedCategory.toObject({ versionKey: false }) };
     }

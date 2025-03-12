@@ -20,18 +20,20 @@ export class ProductsService {
     }
 
     async createProduct(createProductDTO: CreateProductDTO): Promise<{product: Product}> {
-        const existingProduct = await this.productModel.findOne({ name: createProductDTO.name }).exec();
+        const [existingProduct, categoryExists] = await Promise.all([
+            this.productModel.findOne({ name: createProductDTO.name }),
+            this.categoryModel.findById(createProductDTO.categoryId)
+        ]);
 
         if (existingProduct) {
             throw new ConflictException('Já existe um produto com este nome.');
         }
 
-        const categoryExists = await this.categoryModel.findById(createProductDTO.categoryId)
         if (!categoryExists) {
             throw new NotFoundException('Categoria não encontrada.');
         }
-        const product = new this.productModel(createProductDTO);
-        await product.save();
+
+        const product = await this.productModel.create(createProductDTO);
 
         await this.categoryModel.findByIdAndUpdate(
             createProductDTO.categoryId,
@@ -76,14 +78,11 @@ export class ProductsService {
 
     async deleteProduct(id: string): Promise<void> {
         const productId = parseId(id);
-        
-        try {
-            await this.productModel.findByIdAndDelete(productId).exec();
-        } catch (error) {
-            if (error.code === 'P2025') {
-                throw new NotFoundException('Produto não encontrado.');
-            }
-            throw error;
+
+        const product = await this.productModel.findByIdAndDelete(productId).exec();
+
+        if(!product) {
+            throw new NotFoundException('Produto não encontrado.');
         }
     }
 }

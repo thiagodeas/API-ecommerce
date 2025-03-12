@@ -23,8 +23,7 @@ export class CategoriesService {
             throw new ConflictException('Já existe uma categoria com este nome.');
         }
 
-        const category = new this.categoryModel(createCategoryDTO);
-        await category.save();
+        const category = await this.categoryModel.create(createCategoryDTO);
 
         return { category: category.toObject({ versionKey: false }) };
     }
@@ -55,13 +54,10 @@ export class CategoriesService {
     async deleteCategory(id: string) {
         const categoryId = parseId(id);
 
-        try {
-            await this.categoryModel.findByIdAndDelete(categoryId).exec();
-        } catch (error) {
-            if (error.code === 'P2025') {
-                throw new NotFoundException('Categoria não encontrada.');
-            }
-            throw error;
+        const category = await this.categoryModel.findByIdAndDelete(categoryId).exec();
+
+        if (!category) {
+            throw new NotFoundException('Categoria não encontrada.');
         }
     }
 }

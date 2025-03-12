@@ -44,7 +44,6 @@ export class ProductsController {
         return this.productsService.findProductById(id);
     }
 
-    @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Get('category/:id')
     @ApiOperation({ summary: 'Lista produtos de uma categoria específica' })
     @ApiResponse({ status: 200, description: 'Produtos da categoria retornados com sucesso.' })

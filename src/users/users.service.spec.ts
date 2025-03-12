@@ -46,7 +46,7 @@ describe('UsersService', () => {
     jest.clearAllMocks();
   });
 
-  it('deve retornar uma lista de usuarios corretamente convertida', async () => {
+  it('deve retornar todos os usuarios', async () => {
     const mockUsers = [
       { name: 'Thiago', email: 'thiago@teste.com', password: 'senha123', role: 'USER' },
       { name: 'Thiago Teste', email: 'th@teste.com', password: 'senha321', role: 'USER' },
@@ -82,7 +82,6 @@ describe('UsersService', () => {
     const createdUser = {
       ...createUserDTO,
       role: Role.USER,
-      save: jest.fn().mockResolvedValue(undefined),
       toObject: jest.fn().mockReturnValue({
         name: createUserDTO.name,
         email: createUserDTO.email,
@@ -181,7 +180,7 @@ describe('UsersService', () => {
     expect(mockUserModel.findById().exec).toHaveBeenCalled();
   });
 
-  it('deve lançar um NotFoundException quando o usuário não for encontrado.', async () => {
+  it('deve lançar NotFoundException quando o usuário não for encontrado.', async () => {
     const nonExistingUserId = '507f1f77bcf86cd799439011';
 
     mockUserModel.findById = jest.fn().mockReturnValue({
@@ -191,7 +190,7 @@ describe('UsersService', () => {
     await expect(service.findUserById(nonExistingUserId)).rejects.toThrow(new NotFoundException('Usuário não encontrado.'));
   });
 
-  it('deve lançar um BadRequestException se o ID fornecido não for válido.', async () => {
+  it('deve lançar BadRequestException se o ID fornecido não for válido.', async () => {
     const invalidUserId  = 'invalid-user-id';
 
     await expect(service.findUserById(invalidUserId)).rejects.toThrow(new BadRequestException('O ID fornecido não é válido.'));
@@ -231,7 +230,7 @@ describe('UsersService', () => {
     });
   });
 
-  it('deve lançar um NotFoundException quando o usuário não for encontrado', async () => {
+  it('deve lançar NotFoundException quando o usuário não for encontrado', async () => {
     const userId = '507f1f77bcf86cd799439011';
     const updateUserDTO: UpdateUserDTO = { name: 'Novo Nome' };
 
@@ -242,7 +241,7 @@ describe('UsersService', () => {
     await expect(service.updateUser(userId, updateUserDTO)).rejects.toThrow(new NotFoundException('Usuário não encontrado.'));
   });
 
-  it('deve lançar um BadRequestException se a senha for menor que 6 caracteres.', async () => {
+  it('deve lançar BadRequestException se a senha for menor que 6 caracteres.', async () => {
     const userId = '507f1f77bcf86cd799439011';
     const updateUserDTO: UpdateUserDTO = { password: '12345' };
 
@@ -264,7 +263,7 @@ describe('UsersService', () => {
     expect(mockUserModel.findByIdAndDelete).toHaveBeenCalledWith(userId);
   })
 
-  it('deve lançar um NotFoundException se o usuário não for encontrado.', async () => {
+  it('deve lançar NotFoundException se o usuário não for encontrado.', async () => {
     const userId = '507f1f77bcf86cd799439011';
 
     mockUserModel.findByIdAndDelete = jest.fn().mockReturnValue({

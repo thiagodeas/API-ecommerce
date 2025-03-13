@@ -25,7 +25,10 @@ export class UsersService {
             role: Role.USER,
         });
 
-        return createdUser.toObject();
+        const userObject = createdUser.toObject() as any;
+        delete userObject.password;
+
+        return userObject;
     }
 
     async findUserByEmail (email: string): Promise<UserDocument | null> {

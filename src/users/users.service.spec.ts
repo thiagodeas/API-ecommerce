@@ -85,7 +85,6 @@ describe('UsersService', () => {
       toObject: jest.fn().mockReturnValue({
         name: createUserDTO.name,
         email: createUserDTO.email,
-        password: createUserDTO.password,
         role: Role.USER,
       }),
     };
@@ -102,7 +101,6 @@ describe('UsersService', () => {
     expect(result).toEqual({
       name: createUserDTO.name,
       email: createUserDTO.email,
-      password: createUserDTO.password,
       role: Role.USER,
     });
   });

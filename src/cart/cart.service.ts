@@ -94,7 +94,7 @@ export class CartService {
     async removeItemFromCart(id: string, removeItemFromCartDTO: RemoveItemFromCartDTO): Promise<void> {
             const cartId = parseId(id);
 
-            const cart = await this.cartModel.findById(id).exec();
+            const cart = await this.cartModel.findById(cartId).exec();
 
             if (!cart) {
                 throw new NotFoundException('Carrinho não encontrado.');
@@ -163,10 +163,9 @@ export class CartService {
         if (!cart) {
             throw new NotFoundException('Carrinho não encontrado.');
         }
-        
+
         await this.cartItemModel.deleteMany({ cartId: cart._id }).exec();
     
         await this.cartModel.findByIdAndDelete(cartId).exec();
     }
-    
 }

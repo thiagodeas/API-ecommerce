@@ -165,5 +165,5 @@ describe('AuthService', () => {
 
         const result = await service.validateUserByJwt(jwtPayload);
         expect(result).toEqual(user);
-    })
+    });
 })

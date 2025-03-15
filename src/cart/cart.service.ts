@@ -32,8 +32,7 @@ export class CartService {
             throw new ConflictException('O usuário já tem um carrinho.');
         }
 
-        const cart =  new this.cartModel(createCartDTO);
-        await cart.save();
+        const cart = await this.cartModel.create(createCartDTO);
 
         return { cart: cart.toObject({ versionKey: false }) };
     }
@@ -69,14 +68,13 @@ export class CartService {
         } else {
             const subtotal = parseFloat((product.price * addItemToCartDTO.quantity).toFixed(2));
 
-            cartItem = new this.cartItemModel({
+            cartItem = await this.cartItemModel.create({
             cartId: cart._id,
             productId: product._id,
             quantity: addItemToCartDTO.quantity,
             subtotal,
         });
-
-            await cartItem.save();
+        
             await this.cartModel.updateOne({_id: cart.id}, {$push: { items: cartItem._id}});
         }
 
@@ -156,4 +154,19 @@ export class CartService {
             total: parseFloat(cart.total.toFixed(2)),
         });
     }
+
+    async deleteCart(id: string): Promise<void> {
+        const cartId = parseId(id);
+    
+        const cart = await this.cartModel.findById(cartId).exec();
+    
+        if (!cart) {
+            throw new NotFoundException('Carrinho não encontrado.');
+        }
+        
+        await this.cartItemModel.deleteMany({ cartId: cart._id }).exec();
+    
+        await this.cartModel.findByIdAndDelete(cartId).exec();
+    }
+    
 }

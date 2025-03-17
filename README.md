@@ -11,6 +11,7 @@ A API foi desenvolvida com **NestJS** e **MongoDB** e possui recursos como auten
 - **NestJS**: Framework Node.js para construir aplicações escaláveis.
 - **MongoDB**: Banco de dados NoSQL utilizado para armazenar dados da aplicação.
 - **Mongoose**: Biblioteca para modelar os dados no MongoDB.
+- **Jest**: Testes unitários em toda a aplicação.
 - **JWT**: Implementação de autenticação utilizando tokens JWT.
   
 ### Docker:

@@ -1,0 +1,5 @@
+services:
+  backend:
+    environment:
+      - MONGO_HOST=mongo  
+      - MONGODB_URI=mongodb://mongo:27017/ecommerce-db  

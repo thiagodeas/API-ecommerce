@@ -1,7 +1,7 @@
 # E-commerce API
 
 ## Descrição
-Esta é uma API de e-commerce que permite aos usuários explorar, comprar e gerenciar produtos em várias categorias. A aplicação foi dockerizada para facilitar a configuração e a execução tanto em ambientes locais quanto em contêineres Docker.
+Esta é uma API de e-commerce que permite aos usuários explorar e gerenciar produtos em várias categorias. A aplicação foi dockerizada para facilitar a configuração e a execução.
 
 A API foi desenvolvida com **NestJS** e **MongoDB** e possui recursos como autenticação, autorização, gerenciamento de usuários, produtos, categorias e carrinho.
 

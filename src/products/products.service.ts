@@ -19,6 +19,14 @@ export class ProductsService {
         return { products: products.map(product => product.toObject({ versionKey: false })) };
     }
 
+    async searchProducts(query: string) {
+        const products = await this.productModel.find({
+          name: { $regex: query, $options: "i" },
+        }).exec();
+    
+        return { products: products.map(product => product.toObject({ versionKey: false })) };
+      }
+
     async createProduct(createProductDTO: CreateProductDTO): Promise<{product: Product}> {
         const [existingProduct, categoryExists] = await Promise.all([
             this.productModel.findOne({ name: createProductDTO.name }),

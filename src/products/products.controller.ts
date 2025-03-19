@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
@@ -20,6 +20,11 @@ export class ProductsController {
     @ApiResponse({ status: 403, description: 'Usuário não autorizado.' })
     async findAllProducts() {
         return this.productsService.findAll();
+    }
+
+    @Get('search')
+    async searchProducts(@Query("query") query: string) {
+      return this.productsService.searchProducts(query);
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)

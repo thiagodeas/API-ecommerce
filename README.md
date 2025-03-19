@@ -1,7 +1,7 @@
 # E-commerce API
 
 ## Descrição
-Esta é uma API de e-commerce que permite aos usuários explorar, comprar e gerenciar produtos em várias categorias. A aplicação foi dockerizada para facilitar a configuração e a execução tanto em ambientes locais quanto em contêineres Docker.
+Esta é uma API de e-commerce que permite aos usuários explorar e gerenciar produtos em várias categorias. A aplicação foi dockerizada para facilitar a configuração e a execução.
 
 A API foi desenvolvida com **NestJS** e **MongoDB** e possui recursos como autenticação, autorização, gerenciamento de usuários, produtos, categorias e carrinho.
 
@@ -11,6 +11,7 @@ A API foi desenvolvida com **NestJS** e **MongoDB** e possui recursos como auten
 - **NestJS**: Framework Node.js para construir aplicações escaláveis.
 - **MongoDB**: Banco de dados NoSQL utilizado para armazenar dados da aplicação.
 - **Mongoose**: Biblioteca para modelar os dados no MongoDB.
+- **Jest**: Testes unitários em toda a aplicação.
 - **JWT**: Implementação de autenticação utilizando tokens JWT.
   
 ### Docker:
@@ -61,11 +62,14 @@ Crie um arquivo .env na raiz do projeto e configure as variáveis de ambiente ne
     MONGO_HOST=host
     MONGO_PORT=port
     MONGO_DB=db
-    MONGO_URI=mongodb://localhost:27017/ecommerce-db
+    MONGO_URI=mongodb://MONGO_HOST:MONGO_PORT/MONGO_DB
     JWT_SECRET=secret_key
     JWT_EXPIRES_IN=36000
 4. **Iniciar o backend**:
     ```bash
     npm run start:dev
+## Documentação da API
+Com a aplicação em execução, a documentação da API pode ser acessada em: http://localhost:3001/api
+
 ## Contribuindo
 Sinta-se à vontade para contribuir para este projeto! Se você tiver alguma melhoria ou correção de bug, basta fazer um fork, criar uma nova branch, e submeter um pull request.

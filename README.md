@@ -15,7 +15,7 @@ A API foi desenvolvida com **NestJS** e **MongoDB** e possui recursos como auten
 - **JWT**: Implementação de autenticação utilizando tokens JWT.
   
 ### Docker:
-- **Docker**: Utilizado para contêinerizar tanto o backend quanto o banco de dados MongoDB para garantir consistência e facilitar o desenvolvimento e deployment.
+- **Docker**: Utilizado para contêinerizar tanto o backend quanto o banco de dados MongoDB para garantir consistência e facilitar o desenvolvimento e deploy.
 
 ## Funcionalidades
 
